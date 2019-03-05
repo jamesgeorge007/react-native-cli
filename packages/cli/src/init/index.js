@@ -2,8 +2,7 @@
 import init from './init';
 
 export default {
-  func: ([projectName]: Array<string>, ctx: any, options: any) =>
-    init(projectName, options),
+  func: init,
   name: 'init <packageName>',
   description: 'initialize new project',
   options: [

@@ -7,6 +7,7 @@
 export type ContextT = {
   root: string,
   reactNativePath: string,
+  rnVersion: string,
 };
 
 export type LocalCommandT = {

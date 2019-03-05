@@ -9,7 +9,7 @@ export function validateProjectName(name: string) {
     throw new InvalidNameError(name);
   }
 
-  if (name === 'React') {
+  if (name === 'React' || name === 'react') {
     throw new ReservedNameError();
   }
 }

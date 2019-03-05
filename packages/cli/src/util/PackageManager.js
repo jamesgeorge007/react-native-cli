@@ -1,6 +1,9 @@
 // @flow
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import yarn from './yarn';
+
+const execute = promisify(exec);
 
 type PackageManagerOptions = {
   forceNpm?: boolean,
@@ -15,7 +18,7 @@ export default class PackageManager {
   }
 
   executeCommand(command: string) {
-    return execSync(command, { stdio: 'inherit' });
+    return execute(command, { stdio: 'inherit' });
   }
 
   shouldCallYarn() {

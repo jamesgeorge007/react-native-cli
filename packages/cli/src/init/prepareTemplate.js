@@ -1,19 +1,19 @@
 // @flow
 import fs from 'fs-extra';
 import path from 'path';
+import Ora from 'ora';
 import PackageManager from '../util/PackageManager';
 import walk from '../util/walk';
 
-function getExternalTemplate(templateName: string) {
+async function getExternalTemplate(templateName: string) {
   const packageManager = new PackageManager({});
-  packageManager.install([templateName]);
-  fs.copySync(path.join('node_modules', templateName), process.cwd());
+  await packageManager.install([templateName]);
+  await fs.copy(path.join('node_modules', templateName), process.cwd());
 }
 
-function getReactNativeTemplate(version?: string) {
-  // With NPX flow this step won't be necessary
+async function getReactNativeTemplate(version: string) {
   const packageManager = new PackageManager({});
-  packageManager.install([`react-native@${version || 'latest'}`]);
+  await packageManager.install([`react-native@${version}`]);
 
   // We should use `path.dirname(require.resolve('react-native/template'));`, but for now
   // I use this version, because react-native doesn't exist in cli context
@@ -24,7 +24,7 @@ function getReactNativeTemplate(version?: string) {
     'template'
   );
 
-  fs.copySync(templatePath, process.cwd());
+  await fs.copy(templatePath, process.cwd());
 }
 
 function replaceNameInUTF8File(filePath: string, projectName: string) {
@@ -74,18 +74,26 @@ function changeNameInTemplate(projectName: string) {
     });
 }
 
-export function prepareExternalTemplate(
+export async function prepareExternalTemplate(
   projectName: string,
   templateName: string
 ) {
-  getExternalTemplate(templateName);
-  changeNameInTemplate(projectName);
+  const loader = new Ora({ text: 'Getting template files' }).start();
+  await getExternalTemplate(templateName);
+  loader.succeed();
+  loader.text = 'Setting up files';
+  await changeNameInTemplate(projectName);
+  loader.succeed();
 }
 
-export function prepareReactNativeTemplate(
+export async function prepareReactNativeTemplate(
   projectName: string,
   version: string
 ) {
-  getReactNativeTemplate(version);
-  changeNameInTemplate(projectName);
+  const loader = new Ora({ text: 'Getting react-native template' }).start();
+  await getReactNativeTemplate(version);
+  loader.succeed();
+  loader.text = 'Setting up files';
+  await changeNameInTemplate(projectName);
+  loader.succeed();
 }

@@ -16,7 +16,6 @@ import path from 'path';
 import type { CommandT, ContextT } from './core/types.flow';
 import getCommands from './core/getCommands';
 import getLegacyConfig from './core/getLegacyConfig';
-import init from './init/init';
 import assertRequiredOptions from './util/assertRequiredOptions';
 import logger from './util/logger';
 import pkg from '../package.json';
@@ -130,15 +129,15 @@ const addCommand = (command: CommandT, ctx: ContextT) => {
     .option('--reactNativePath [string]', 'Path to React Native');
 };
 
-async function run() {
+async function run(rnVersion: string) {
   try {
-    await setupAndRun();
+    await setupAndRun(rnVersion);
   } catch (e) {
     handleError(e);
   }
 }
 
-async function setupAndRun() {
+async function setupAndRun(rnVersion: string) {
   const setupEnvScript = /^win/.test(process.platform)
     ? path.join('..', 'setup_env.bat')
     : path.join('..', 'setup_env.sh');
@@ -167,11 +166,14 @@ async function setupAndRun() {
               paths: [root],
             })
           );
-        } catch (_ignored) {
+        } catch (_) {
+          if (options._[0] !== 'init') {
+            throw new Error(
+              'Unable to find React Native files. Make sure "react-native" module is installed in your project dependencies.'
+            );
+          }
+
           return '';
-          // throw new Error(
-          //   'Unable to find React Native files. Make sure "react-native" module is installed in your project dependencies.'
-          // );
         }
       })();
 
@@ -179,6 +181,7 @@ async function setupAndRun() {
     ...getLegacyConfig(root),
     reactNativePath,
     root,
+    rnVersion,
   };
 
   const commands = getCommands(ctx.root);
@@ -194,7 +197,6 @@ async function setupAndRun() {
 
 export default {
   run,
-  init,
 };
 
 // export { run, init };
